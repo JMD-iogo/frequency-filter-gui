@@ -1,55 +1,55 @@
 # Frequency Filter GUI
 
-Aplicação em Python/Tkinter que permite aplicar filtros no domínio da frequência  
-(LPF, HPF, BPF e BRF) a imagens em tons de cinzento ou RGB.
+Python/Tkinter application that allows applying frequency-domain filters  
+(LPF, HPF, BPF, and BRF) to grayscale or RGB images.
 
 ---
 
-## Funcionalidades
+## Features
 
-- Carregar imagens (PNG, JPG, BMP, TIFF).
-- Converter automaticamente imagens RGB para intensidade (opcional).
-- Visualização:
-  - Imagem original
-  - Espectro de magnitude (FFT)
-  - Fase
-  - Máscara de filtro
-  - Magnitude filtrada
-  - Imagem resultante
-- Filtros disponíveis:
-  - **LPF** – passa-baixo  
-  - **HPF** – passa-alto  
-  - **BPF** – passa-banda  
-  - **BRF** – rejeita-banda  
-- Perfis:
+- Load images (PNG, JPG, BMP, TIFF)
+- Optional automatic conversion of RGB images to intensity
+- Visualization panels:
+  - Original image
+  - Magnitude spectrum (FFT)
+  - Phase
+  - Filter mask
+  - Filtered magnitude
+  - Final filtered image
+- Available filters:
+  - **LPF** – Low-pass  
+  - **HPF** – High-pass  
+  - **BPF** – Band-pass  
+  - **BRF** – Band-reject  
+- Filter profiles:
   - Ideal  
-  - Gaussiano  
-  - Butterworth (com ordem ajustável)
-- Modo **notch filter** (filtro deslocado), com seleção do centro por clique.
-- Atualização em tempo real (máscara / filtro).
-- Cálculo de métricas:
+  - Gaussian  
+  - Butterworth (with adjustable order)
+- **Notch filter mode**, with clickable center selection
+- Real-time updates (mask and filtering)
+- Automatic calculation of:
   - MSE  
   - PSNR  
-- Guardar automaticamente:
-  - imagem filtrada
-  - imagem original
-  - espectro de magnitude original
-  - fase
-  - máscara do filtro
-  - espectro filtrado
-  - ficheiro de especificações
+- Optional saving of:
+  - Filtered image  
+  - Original image  
+  - Original magnitude spectrum  
+  - Phase  
+  - Filter mask  
+  - Filtered magnitude spectrum  
+  - Specs text file
 
 ---
 
-## Instalação
+## Installation
 
 ```bash
-git clone https://github.com/<teu-username>/frequency-filter-gui.git
+git clone https://github.com/<your-username>/frequency-filter-gui.git
 cd frequency-filter-gui
 
-# (opcional) criar ambiente virtual
+# (optional) create a virtual environment
 python -m venv venv
 venv\Scripts\activate
 
-# instalar dependências
+# install dependencies
 pip install -r requirements.txt

@@ -6,138 +6,144 @@ Autor: Diogo Ferreira
 #   frequency_filter_gui.py
 #
 # PURPOSE:
-#   Aplicação interativa em Python/Tkinter para aplicar filtros no domínio da
-#   frequência (LPF, HPF, BPF e BRF/rejeita-banda) a imagens 2D (tons de
-#   cinzento ou RGB), visualizar espectros de magnitude/fase e avaliar a
-#   qualidade da filtragem com MSE e PSNR.
+#   Interactive Python/Tkinter application for applying frequency-domain
+#   filters (LPF, HPF, BPF and BRF/band-reject) to 2D images (grayscale or RGB),
+#   visualizing magnitude/phase spectra and evaluating the filtering quality
+#   using MSE and PSNR.
 #
 # CATEGORY:
-#   Processamento Digital de Imagem / Processamento de Sinal no domínio da frequência.
+#   Digital Image Processing / Frequency-Domain Signal Processing.
 #
 # CALLING SEQUENCE:
-#   - A partir da linha de comandos: python frequency_filter_gui.py  ou
-#   - Correndo o código diretamente no ambiente de desenvolvimento  ou
-#   - Abrindo o executável gerado a partir deste script.
+#   - From the command line: python frequency_filter_gui.py
+#   - Running the code directly inside a development environment
+#   - Opening the executable generated from this script.
 #
 # INPUTS:
-#   Entrada principal da aplicação (via GUI):
-#     - Ficheiro de imagem selecionado pelo utilizador
-#       (formatos suportados: PNG, JPG/JPEG, BMP, TIFF, etc.).
+#   Main application input (via GUI):
+#     - Image file selected by the user
+#       (supported formats: PNG, JPG/JPEG, BMP, TIFF, etc.).
 #
 # GUI PARAMETERS:
-#   (Selecionados/ajustados via interface gráfica)
+#   (Selected/adjusted through the graphical interface)
 #
-#   Tipo de filtro (filter_type_var / OptionMenu):
-#       'LPF (passa-baixo)'  – filtro passa-baixo radial centrado.
-#       'HPF (passa-alto)'   – filtro passa-alto radial centrado.
-#       'BPF (passa-banda)'  – filtro passa-banda radial centrado.
-#       'BRF (rejeita banda)'– filtro rejeita-banda radial centrado.
+#   Filter type (filter_type_var / OptionMenu):
+#       'LPF (low-pass)'     – radial low-pass filter centered at DC.
+#       'HPF (high-pass)'    – radial high-pass filter centered at DC.
+#       'BPF (band-pass)'    – radial band-pass filter centered at DC.
+#       'BRF (band-reject)'  – radial band-reject filter centered at DC.
 #
 #
-#   Perfil do filtro (profile_var / OptionMenu):
-#       'Ideal'       – máscara binária ideal.
-#       'Gaussiano'   – máscara gaussiana.
-#       'Butterworth' – máscara Butterworth de ordem n.
+#   Filter profile (profile_var / OptionMenu):
+#       'Ideal'       – ideal binary mask.
+#       'Gaussian'    – Gaussian mask.
+#       'Butterworth' – Butterworth mask of order n.
 #
-#   Parâmetros radiais (sliders r1, r2, ordem):
-#       r1  – raio interior em píxeis
-#             (usado em HPF, BPF e BRF).
-#       r2  – raio exterior em píxeis
-#             (usado em LPF, BPF e BRF).
-#       n   – ordem Butterworth (scale_order), aplicável quando o perfil é
-#             'Butterworth' (quanto maior n, mais abrupta a transição).
+#   Radial parameters (sliders r1, r2, order):
+#       r1 – inner radius in pixels
+#            (used in HPF, BPF and BRF).
+#       r2 – outer radius in pixels
+#            (used in LPF, BPF and BRF).
+#       n  – Butterworth order (scale_order), applicable when the profile is
+#            'Butterworth' (higher n → sharper transition).
 #
-#   Parâmetros de filtro deslocado / notch:
-#       Checkbox "Filtro deslocado (tipo notch)":
-#         - Quando desligada: o filtro é centrado na frequência 0 (centro da FFT).
-#         - Quando ligada: o centro do filtro é deslocado para (u0, v0), permitindo
-#           criar filtros tipo notch (rejeição localizada em frequência).
+#   Notch / shifted-filter parameters:
+#       Checkbox "Shifted filter (notch mode)":
+#         - When OFF: the filter is centered at zero frequency (FFT center).
+#         - When ON: the filter center is shifted to (u0, v0), allowing
+#           localized notch filters (frequency-specific rejection).
 #
-#       u0, v0 – deslocamento do centro do filtro relativamente ao centro da
-#                transformada (em píxeis, eixo das colunas/linhas).
-#                Podem ser definidos:
-#                  · manualmente, através das escalas (scale_notch_u0, scale_notch_v0)
-#                  · ou clicando diretamente em algumas das imagens da figura
-#                    principal (original, magnitude, fase, magnitude filtrada,
-#                    imagem filtrada).
+#       u0, v0 – offset of the filter center relative to the FFT center
+#               (in pixels, columns/rows).
+#               These can be defined:
+#                 · manually using the sliders (scale_notch_u0, scale_notch_v0)
+#                 · or by clicking directly on some of the displayed images
+#                   (original, magnitude, phase, filtered magnitude,
+#                    filtered image).
 #
-#   Definições adicionais (janela "Definições"):
-#       - "Atualizar máscara em tempo real":
-#           Atualiza o preview da máscara automaticamente ao alterar
-#           parâmetros (r1, r2, ordem, u0, v0, tipo/perfil).
-#       - "Aplicar filtro em tempo real" :
-#           Aplica o filtro imediatamente após qualquer alteração de parâmetros.
-#       - "Mostrar dicas (tooltips)":
-#           Liga/desliga globalmente as dicas, estas aparecem ao passar o rato sobre
-#           os widgets da GUI.
+#   Additional settings (in the "Settings" window):
+#       - "Update mask in real-time":
+#           Automatically updates the mask preview when changing
+#           parameters (r1, r2, order, u0, v0, type/profile).
+#
+#       - "Apply filter in real-time":
+#           Automatically applies the filter after any parameter change.
+#
+#       - "Show tooltips":
+#           Enables/disables tooltips that appear when hovering over GUI widgets.
 #
 #
 # OUTPUTS:
-#   Resultados mostrados na figura principal:
-#       - Imagem original (domínio espacial).
-#       - Magnitude do espectro original (escala logarítmica normalizada).
-#       - Fase do espectro original.
-#       - Máscara do filtro no domínio da frequência.
-#       - Magnitude do espectro filtrado.
-#       - Imagem filtrada reconstruída no domínio espacial.
+#   Results shown in the main figure:
+#       - Original spatial-domain image.
+#       - Original magnitude spectrum (log-scaled and normalized).
+#       - Original phase spectrum.
+#       - Frequency-domain filter mask.
+#       - Filtered magnitude spectrum.
+#       - Reconstructed filtered image in the spatial domain.
 #
-#   Métricas numéricas (label na GUI, painel direito):
-#       - MSE  – erro quadrático médio entre imagem original e filtrada.
-#       - PSNR – relação sinal-ruído de pico (em dB), assumindo imagens
-#                normalizadas em [0, 1].
+#   Numerical metrics (label on the right panel):
+#       - MSE  – mean squared error between original and filtered images.
+#       - PSNR – peak signal-to-noise ratio (in dB), assuming images
+#                normalized to [0, 1].
 #
-#   Output opcional em ficheiro (botão "Guardar imagem filtrada"):
-#       - Imagem filtrada, no formato selecionado (PNG/JPEG/BMP/TIFF).
-#       - Opcionalmente, caso as checkboxes estejam ativas, é criada uma pasta
-#         com o nome base do ficheiro escolhido, contendo:
-#           * Imagem original.
-#           * Magnitude do espectro original.
-#           * Fase do espectro original.
-#           * Máscara do filtro.
-#           * Magnitude do espectro filtrado.
-#           * Ficheiro de texto "<base>_spcs.txt" com:
-#               · caminho da imagem filtrada,
-#               · tipo de filtro (LPF/HPF/BPF/BRF) e perfil (Ideal/Gaussiano/Butterworth),
-#               · parâmetros (r1, r2, ordem, u0, v0, estado do filtro deslocado),
-#               · MSE e PSNR.
+#   Optional output files ("Save filtered image" button):
+#       - Filtered image in the chosen format (PNG/JPEG/BMP/TIFF).
+#       - Optionally, when the checkboxes are enabled, a directory is created
+#         with the base name of the chosen file, containing:
+#           * Original image.
+#           * Original magnitude spectrum.
+#           * Original phase spectrum.
+#           * Filter mask.
+#           * Filtered magnitude spectrum.
+#           * Text file "<base>_spcs.txt" containing:
+#               · path of the filtered image
+#               · filter type (LPF/HPF/BPF/BRF) and profile
+#                 (Ideal/Gaussian/Butterworth)
+#               · parameters (r1, r2, order, u0, v0, notch mode status)
+#               · MSE and PSNR values.
 #
 #
 # SIDE EFFECTS:
-#   - Criação de janelas gráficas Tkinter (janela principal e janela de
-#     definições).
-#   - Criação de subdiretório para saída, quando o utilizador seleciona
-#     guardar ficheiros adicionais (imagem original, espectros, máscara, specs).
-#   - Possível aumento do tempo de resposta quando a atualização em tempo real
-#     da máscara e/ou aplicação automática do filtro estão ligadas, sobretudo
-#     para imagens grandes.
+#   - Creation of Tkinter graphical windows (main window + settings window).
+#   - Creation of an output directory if the user chooses to save additional
+#     files (original image, spectra, mask, specs).
+#   - Possible delay in responsiveness when real-time mask updates and/or
+#     automatic filter application are enabled, especially for large images.
 #
 #
 # RESTRICTIONS:
-#   - Tamanho máximo da imagem carregada limitado por 'max_side' em
-#     load_image_any (por defeito 512 píxeis no maior lado).
-#   - A aplicação assume imagens normalizadas em [0, 1] para o cálculo de MSE
-#     e PSNR.
-#   - Em imagens RGB, o utilizador escolhe:
-#       -converter para intensidade (tons de cinzento) ou
-#       -aplicar o filtro de igual fomra em cada canal
+#   - Maximum image size limited by 'max_side' in load_image_any (default:
+#     512 pixels on the longest side).
+#   - The application assumes normalized images in [0, 1] for MSE and PSNR.
+#   - For RGB images, the user chooses between:
+#       - converting to grayscale intensity, or
+#       - applying the filter equally to all RGB channels.
 #
 #
 # PROCEDURE:
-#   1. Carregamento da imagem.
-#      Se a imagem for RGB, o utilizador escolhe trabalhar em intensidade
-#      (conversão para tons de cinzento) ou aplicar o filtro canal-a-canal.
-#   2. Cálculo da Transformada de Fourier 2D, seguida de fftshift
-#      para centrar as frequências baixas.
-#   3. Cálculo do mapa de distâncias radiais D em relação ao centro da FFT.
-#   4. Criação da máscara de filtro no domínio da frequência de acordo com as seleções
-#   5. Aplicação da máscara sobre o espectro (canal a canal para RGB).
-#   6. Transformada inversa (ifftshift + ifft2) e extração da parte real.
-#   7. Atualização das figuras (original, espectros, máscara, filtrada) e
-#      cálculo das métricas MSE e PSNR.
-#   8. Opcionalmente, gravação dos resultados em disco (imagem filtrada,
-#      componentes auxiliares e ficheiro de especificações).
+#   1. Image loading.
+#      If the image is RGB, the user chooses whether to work in grayscale
+#      (intensity conversion) or apply the filter channel-by-channel.
 #
+#   2. Compute the 2D Fourier Transform, followed by fftshift to center
+#      the low frequencies.
 #
+#   3. Compute the radial distance map D relative to the FFT center.
+#
+#   4. Build the frequency-domain filter mask according to GUI selections.
+#
+#   5. Apply the mask to the spectrum (channel-by-channel for RGB).
+#
+#   6. Perform the inverse transform (ifftshift + ifft2) and extract the
+#      real part of the result.
+#
+#   7. Update figures (original, spectra, mask, filtered result) and compute
+#      MSE and PSNR metrics.
+#
+#   8. Optionally save all results to disk (filtered image, auxiliary
+#      components, and specification file).
+
 
 import tkinter as tk
 from tkinter import filedialog, messagebox
