@@ -44,7 +44,7 @@ Python/Tkinter application that allows applying frequency-domain filters
 ## Installation
 
 ```bash
-git clone https://github.com/<your-username>/frequency-filter-gui.git
+git clone https://github.com/JMD-iogo/frequency-filter-gui.git
 cd frequency-filter-gui
 
 # (optional) create a virtual environment
